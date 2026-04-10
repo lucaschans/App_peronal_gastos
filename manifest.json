@@ -1,7 +1,8 @@
 {
   "name": "MisCuentas – Control de Gastos",
   "short_name": "MisCuentas",
-  "description": "Control de gastos actualizado"  "start_url": "/App_peronal_gastos/",  
+  "description": "Control de gastos actualizado",
+  "start_url": "/App_peronal_gastos/",  
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f0f1a",
