@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f0f1a" />
+  <meta name="description" content="Control de gastos personales - Tu dinero bajo control" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MisCuentas" />
+
+  <title>MisCuentas</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Favicons / Icons -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ==================== SPLASH / LOADER ==================== -->
+  <div id="splash" class="splash">
+    <div class="splash-logo">
+      <span class="splash-icon">◈</span>
+      <span class="splash-name">MisCuentas</span>
+    </div>
+  </div>
+
+  <!-- ==================== APP WRAPPER ==================== -->
+  <div id="app" class="app hidden">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-logo">◈</span>
+        <span class="topbar-title">MisCuentas</span>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="btn-filter" title="Filtrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLL AREA -->
+    <main class="main-scroll">
+
+      <!-- BALANCE CARD -->
+      <section class="balance-section">
+        <div class="balance-card">
+          <div class="balance-label">Balance total</div>
+          <div class="balance-amount" id="balance-amount">€ 0,00</div>
+          <div class="balance-row">
+            <div class="balance-stat income">
+              <div class="balance-stat-icon">↑</div>
+              <div>
+                <div class="balance-stat-label">Ingresos</div>
+                <div class="balance-stat-value" id="total-income">€ 0,00</div>
+              </div>
+            </div>
+            <div class="balance-divider"></div>
+            <div class="balance-stat expense">
+              <div class="balance-stat-icon">↓</div>
+              <div>
+                <div class="balance-stat-label">Gastos</div>
+                <div class="balance-stat-value" id="total-expense">€ 0,00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK STATS (mes actual) -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Este mes</h2>
+          <span class="section-meta" id="current-month-label"></span>
+        </div>
+        <div class="quick-stats">
+          <div class="stat-pill">
+            <span class="stat-pill-icon">🍽️</span>
+            <span class="stat-pill-label">Comida</span>
+            <span class="stat-pill-value" id="stat-food">€0</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-icon">🚗</span>
+            <span class="stat-pill-label">Transporte</span>
+            <span class="stat-pill-value" id="stat-transport">€0</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-icon">🎮</span>
+            <span class="stat-pill-label">Ocio</span>
+            <span class="stat-pill-value" id="stat-leisure">€0</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-icon">📦</span>
+            <span class="stat-pill-label">Otros</span>
+            <span class="stat-pill-value" id="stat-others">€0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHARTS SECTION -->
+      <section class="section" id="charts-section">
+        <div class="section-header">
+          <h2 class="section-title">Análisis</h2>
+          <div class="chart-tabs">
+            <button class="chart-tab active" data-chart="pie">Categorías</button>
+            <button class="chart-tab" data-chart="line">Evolución</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="pie-chart" class="chart-canvas active-chart"></canvas>
+          <canvas id="line-chart" class="chart-canvas"></canvas>
+          <div class="chart-empty" id="chart-empty">
+            <span>Sin datos aún</span>
+            <p>Añade tu primer movimiento</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOVEMENTS LIST -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Movimientos</h2>
+          <button class="link-btn" id="btn-clear-all">Borrar todo</button>
+        </div>
+
+        <!-- Filter bar (hidden by default) -->
+        <div class="filter-bar hidden" id="filter-bar">
+          <select class="filter-select" id="filter-type">
+            <option value="all">Todos</option>
+            <option value="income">Ingresos</option>
+            <option value="expense">Gastos</option>
+          </select>
+          <select class="filter-select" id="filter-cat">
+            <option value="all">Categoría</option>
+            <option value="comida">Comida</option>
+            <option value="transporte">Transporte</option>
+            <option value="ocio">Ocio</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+
+        <div class="movements-list" id="movements-list">
+          <!-- Items injected by JS -->
+        </div>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">◎</div>
+          <p class="empty-title">Sin movimientos</p>
+          <p class="empty-sub">Pulsa <strong>+</strong> para añadir tu primer registro</p>
+        </div>
+      </section>
+
+      <!-- Bottom padding for FAB -->
+      <div style="height: 100px"></div>
+    </main>
+
+    <!-- FAB ADD BUTTON -->
+    <button class="fab" id="fab-btn" title="Añadir movimiento">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+  </div><!-- /app -->
+
+
+  <!-- ==================== MODAL: ADD MOVEMENT ==================== -->
+  <div class="modal-overlay hidden" id="modal-add">
+    <div class="modal-sheet" id="modal-sheet">
+      <div class="modal-handle"></div>
+
+      <div class="modal-header">
+        <h3 class="modal-title">Nuevo movimiento</h3>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+
+      <!-- Type toggle -->
+      <div class="type-toggle">
+        <button class="type-btn expense-btn active" id="type-expense">
+          <span>↓</span> Gasto
+        </button>
+        <button class="type-btn income-btn" id="type-income">
+          <span>↑</span> Ingreso
+        </button>
+      </div>
+
+      <!-- Amount input -->
+      <div class="amount-field">
+        <span class="amount-currency">€</span>
+        <input
+          type="number"
+          id="input-amount"
+          class="amount-input"
+          placeholder="0,00"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="field-group">
+        <label class="field-label">Descripción</label>
+        <input
+          type="text"
+          id="input-desc"
+          class="field-input"
+          placeholder="ej: gasolina, cena, netflix…"
+          maxlength="60"
+        />
+      </div>
+
+      <!-- Category (auto + manual override) -->
+      <div class="field-group">
+        <label class="field-label">Categoría <span class="badge-auto" id="badge-auto">automática</span></label>
+        <div class="cat-pills" id="cat-pills">
+          <button class="cat-pill active" data-cat="comida">🍽️ Comida</button>
+          <button class="cat-pill" data-cat="transporte">🚗 Transporte</button>
+          <button class="cat-pill" data-cat="ocio">🎮 Ocio</button>
+          <button class="cat-pill" data-cat="otros">📦 Otros</button>
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="field-group">
+        <label class="field-label">Fecha</label>
+        <input type="date" id="input-date" class="field-input" />
+      </div>
+
+      <!-- Submit -->
+      <button class="submit-btn" id="submit-btn">Guardar movimiento</button>
+    </div>
+  </div>
+
+
+  <!-- ==================== TOAST ==================== -->
+  <div class="toast hidden" id="toast"></div>
+
+
+  <!-- ==================== APP JS ==================== -->
+  <script src="app.js"></script>
+</body>
+</html>
