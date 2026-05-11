@@ -1152,29 +1152,24 @@ function showToast(msg) {
 
 // ── RECUPERAR MIS DATOS ──
 function recuperarDatos() {
-  // Buscamos tu caja de datos antigua
   const datosViejos = localStorage.getItem('miscuentas_v1');
-
   if (datosViejos) {
     try {
       const oldTxs = JSON.parse(datosViejos);
       if (oldTxs && oldTxs.length > 0) {
-        // Adaptamos tus datos al nuevo formato
         txs = oldTxs.map(t => ({
           id: t.id,
           desc: t.description || 'Sin descripción',
           amount: t.amount,
           date: t.date,
           type: t.type,
-          cat: t.category
+          cat: t.category || 'otros'
         }));
-        // Guardamos en la caja nueva (sobrescribiendo los ejemplos)
         save(txs);
-        // Borramos la caja antigua para no repetir el proceso
         localStorage.removeItem('miscuentas_v1');
       }
     } catch (e) {
-      console.error('Error recuperando datos', e);
+      console.error('Error', e);
     }
   }
 }
