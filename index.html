@@ -1150,36 +1150,37 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ── SEED DATA ──
-function seedIfEmpty() {
-  if (txs.length) return;
-  const now = new Date();
-  const seed = [
-    { type: 'ingreso', desc: 'Nómina mayo', amount: 1800, cat: 'ingreso', daysAgo: 1 },
-    { type: 'gasto', desc: 'Mercadona', amount: 67.40, cat: 'comida', daysAgo: 1 },
-    { type: 'gasto', desc: 'Spotify', amount: 9.99, cat: 'ocio', daysAgo: 2 },
-    { type: 'gasto', desc: 'Gasolina Repsol', amount: 55.00, cat: 'transporte', daysAgo: 3 },
-    { type: 'gasto', desc: 'Restaurante La Mar', amount: 32.50, cat: 'comida', daysAgo: 4 },
-    { type: 'gasto', desc: 'Netflix', amount: 15.99, cat: 'ocio', daysAgo: 5 },
-    { type: 'gasto', desc: 'Bus mensual', amount: 40.00, cat: 'transporte', daysAgo: 6 },
-    { type: 'ingreso', desc: 'Nómina abril', amount: 1800, cat: 'ingreso', daysAgo: 32 },
-    { type: 'gasto', desc: 'Aldi', amount: 43.20, cat: 'comida', daysAgo: 33 },
-    { type: 'gasto', desc: 'Amazon Prime', amount: 4.99, cat: 'ocio', daysAgo: 34 },
-    { type: 'gasto', desc: 'Gasolinera BP', amount: 48.30, cat: 'transporte', daysAgo: 35 },
-    { type: 'ingreso', desc: 'Nómina marzo', amount: 1750, cat: 'ingreso', daysAgo: 62 },
-    { type: 'gasto', desc: 'Supermercado', amount: 88.60, cat: 'comida', daysAgo: 63 },
-    { type: 'gasto', desc: 'Cine', amount: 22.00, cat: 'ocio', daysAgo: 65 },
-    { type: 'gasto', desc: 'Taxi aeropuerto', amount: 35.00, cat: 'transporte', daysAgo: 70 },
-  ];
-  txs = seed.map((s, i) => {
-    const d = new Date(now); d.setDate(d.getDate() - s.daysAgo);
-    return { id: (Date.now() + i).toString(), desc: s.desc, amount: s.amount, type: s.type, cat: s.cat, date: d.toISOString().slice(0,10) };
-  });
-  save(txs);
+// ── RECUPERAR MIS DATOS ──
+function recuperarDatos() {
+  // Buscamos tu caja de datos antigua
+  const datosViejos = localStorage.getItem('miscuentas_v1');
+
+  if (datosViejos) {
+    try {
+      const oldTxs = JSON.parse(datosViejos);
+      if (oldTxs && oldTxs.length > 0) {
+        // Adaptamos tus datos al nuevo formato
+        txs = oldTxs.map(t => ({
+          id: t.id,
+          desc: t.description || 'Sin descripción',
+          amount: t.amount,
+          date: t.date,
+          type: t.type,
+          cat: t.category
+        }));
+        // Guardamos en la caja nueva (sobrescribiendo los ejemplos)
+        save(txs);
+        // Borramos la caja antigua para no repetir el proceso
+        localStorage.removeItem('miscuentas_v1');
+      }
+    } catch (e) {
+      console.error('Error recuperando datos', e);
+    }
+  }
 }
 
 // ── INIT ──
-seedIfEmpty();
+recuperarDatos();
 render();
 </script>
 </body>
